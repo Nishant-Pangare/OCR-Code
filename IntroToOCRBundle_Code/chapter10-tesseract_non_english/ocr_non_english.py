@@ -2,7 +2,7 @@
 # python ocr_non_english.py --image images/german.png --lang deu
 
 # import the necessary packages
-from textblob import TextBlob
+from deep_translator import GoogleTranslator
 import pytesseract
 import argparse
 import cv2
@@ -10,17 +10,16 @@ import cv2
 # construct the argument parser and parse the arguments
 ap = argparse.ArgumentParser()
 ap.add_argument("-i", "--image", required=True,
-	help="path to input image to be OCR'd")
+    help="path to input image to be OCR'd")
 ap.add_argument("-l", "--lang", required=True,
-	help="language that Tesseract will use when OCR'ing")
+    help="language that Tesseract will use when OCR'ing")
 ap.add_argument("-t", "--to", type=str, default="en",
-	help="language that we'll be translating to")
+    help="language that we'll be translating to")
 ap.add_argument("-p", "--psm", type=int, default=13,
-	help="Tesseract PSM mode")
+    help="Tesseract PSM mode")
 args = vars(ap.parse_args())
 
-# load the input image and convert it from BGR to RGB channel
-# ordering
+# load the input image and convert it from BGR to RGB channel ordering
 image = cv2.imread(args["image"])
 rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
@@ -34,9 +33,8 @@ print("========")
 print(text)
 print("")
 
-# translate the text to a different language
-tb = TextBlob(text)
-translated = tb.translate(to=args["to"])
+# translate the text to a different language using deep-translator
+translated = GoogleTranslator(source='auto', target=args["to"]).translate(text)
 
 # show the translated text
 print("TRANSLATED")
