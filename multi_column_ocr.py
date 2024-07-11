@@ -10,12 +10,12 @@ import cv2
 
 # Define input image path and output CSV path directly
 input_image_path = "Final OCR Code/ledger KANAK[1]_page-0001.jpg"  # Replace with your image path
-output_csv_path = "Final OCR Code/results11.csv"  # Replace with your desired output path
+output_csv_path = "Final OCR Code/results_zeroconf.csv"  # Replace with your desired output path
 
 # Set other parameters
-min_conf = 0
-dist_thresh = 25.0
-min_size = 3
+min_conf = 0.1
+dist_thresh = 100.0
+min_size = 20
 
 # set a seed for our random number generator
 np.random.seed(42)
@@ -23,6 +23,26 @@ np.random.seed(42)
 # load the input image and convert it to grayscale
 image = cv2.imread(input_image_path)
 gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+# Step 1: Contrast Adjustment
+gray = cv2.convertScaleAbs(gray, alpha=2.0, beta=0)  
+plt.figure(figsize=(20, 20))
+plt.title('Contrast Adjustment Image')
+plt.imshow(gray)
+plt.axis('off')
+plt.show()
+
+
+# Step 3: Edge Sharpening using a Kernel
+kernel_sharpening = np.array([[-1, -1, -1], 
+                              [-1,  9, -1],
+                              [-1, -1, -1]])
+gray = cv2.filter2D(gray, -1, kernel_sharpening)  # <-- Added line
+plt.figure(figsize=(20, 20))
+plt.title('Sharpened Image')
+plt.imshow(gray)
+plt.axis('off')
+plt.show()
 
 plt.figure(figsize=(20, 20))
 plt.title('Gray Image')
@@ -125,8 +145,15 @@ results = pytesseract.image_to_data(cv2.cvtColor(table, cv2.COLOR_BGR2RGB), conf
 
 # print(results)
 
-# df = pd.DataFrame(results)
-# print(df)
+df = pd.DataFrame(results)
+print(df)
+
+
+df.to_csv('Tesseract_LedgerResult.csv',index=False)
+print('Output Saved')
+
+# with open('Tesseract_LedgerResult.txt', 'w') as file:
+#     file.write(df.to_string(index=False))
 
 # initialize a list to store the (x, y)-coordinates of the detected
 # text along with the OCR'd text itself
@@ -160,7 +187,7 @@ xCoords = [(c[0], 0) for c in coords]
 # apply hierarchical agglomerative clustering to the coordinates
 clustering = AgglomerativeClustering(
     n_clusters=None,
-    metric="euclidean",
+    metric="manhattan",
     linkage="complete",
     distance_threshold=dist_thresh
 )
